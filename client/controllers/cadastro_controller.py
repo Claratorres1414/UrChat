@@ -27,7 +27,7 @@ class CadastroController:
             self.ui.username_input.clear()
             self.ui.password_input.clear()
         else:
-            QMessageBox.critical(self.ui, "Erro", result["error"])
+            QMessageBox.critical(self.ui, "Erro", "Nome de usuário já cadastrado!")
 
     def tp_home(self):
         self.main_window.mostrar_tela("home")

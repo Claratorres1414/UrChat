@@ -23,9 +23,11 @@ class LoginController:
         result = self.api_service.login_user(username, password)
         if result["success"]:
             QMessageBox.information(self.ui, "Sucesso", f"Bem vindo {username}!")
+            self.ui.username_input.clear()
+            self.ui.password_input.clear()
             self.main_window.mostrar_tela("main_chat")
         else:
-            QMessageBox.warning(self.ui, "Erro", result["error"])
+            QMessageBox.warning(self.ui, "Erro", "Falha ao logar, usuário ou senha inválidos!")
 
     def tp_home(self):
         self.main_window.mostrar_tela("home")
