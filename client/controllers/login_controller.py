@@ -9,7 +9,7 @@ class LoginController:
         self.main_window = main_window
         self.api_service = api_service
 
-        self.ui.cadastrar_btn.clicked.connect(self.entrar_usuario)
+        self.ui.entrar_btn.clicked.connect(self.entrar_usuario)
         self.ui.voltar_btn.clicked.connect(self.tp_home)
 
     def entrar_usuario(self):
