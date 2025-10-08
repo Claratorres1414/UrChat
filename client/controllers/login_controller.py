@@ -22,7 +22,7 @@ class LoginController:
 
         result = self.api_service.login_user(username, password)
         if result["success"]:
-            QMessageBox.information(self.ui, "Sucesso", result["message"])
+            QMessageBox.information(self.ui, "Sucesso", f"Bem vindo {username}!")
             self.ui.username_input.clear()
             self.ui.password_input.clear()
         else:
