@@ -3,8 +3,10 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 
 from client.controllers.home_controller import HomeController
 from client.controllers.login_controller import LoginController
+from client.controllers.main_chat_controller import MainChatController
 from client.views.home_ui import HomeUi
 from client.views.login_ui import LoginUI
+from client.views.main_chat_ui import MainChatUI
 from views.cadastro_ui import CadastroUi
 from controllers.cadastro_controller import CadastroController
 from services.api_service import ApiService
@@ -22,20 +24,24 @@ class MainWindow(QMainWindow):
         self.home_ui = HomeUi()
         self.cadastro_ui = CadastroUi()
         self.login_ui = LoginUI()
+        self.main_chat_ui = MainChatUI()
 
         self.stack.addWidget(self.home_ui)
         self.stack.addWidget(self.cadastro_ui)
         self.stack.addWidget(self.login_ui)
+        self.stack.addWidget(self.main_chat_ui)
 
         self.telas = {
             "home": self.stack.indexOf(self.home_ui),
             "cadastro": self.stack.indexOf(self.cadastro_ui),
-            "login": self.stack.indexOf(self.login_ui)
+            "login": self.stack.indexOf(self.login_ui),
+            "main_chat": self.stack.indexOf(self.main_chat_ui)
         }
 
         self.home_controller = HomeController(self.home_ui, self)
         self.cadastro_controller = CadastroController(self.cadastro_ui, self, self.api_service)
         self.login_controller = LoginController(self.login_ui, self, self.api_service)
+        self.main_chat_controller = MainChatController(self.main_chat_ui, self)
 
         self.mostrar_tela("home")
 
