@@ -1,3 +1,4 @@
+import time
 import requests
 from requests.exceptions import RequestException
 import threading
@@ -7,6 +8,9 @@ class ApiService:
     def __init__(self, base_url: str, base_ws_url: str):
         self.base_url = base_url.rstrip('/')
         self.base_ws_url = base_ws_url.rstrip('/')
+        self.ws = None
+        self.ws_thread = None
+        self.keep_running = False
 
     def list_contacts(self):
         try:
@@ -43,14 +47,47 @@ class ApiService:
 
     def connect_user(self, token: str):
         ws_url = f"{self.base_ws_url}{token}"
+        self.keep_running = True
 
         def run_ws():
             try:
-                ws = websocket.WebSocket()
-                ws.connect(ws_url)
+                self.ws = websocket.WebSocket()
+                self.ws.connect(ws_url)
                 print("Conexão WebSocket estabelecida com o servidor!")
-            except Exception as e:
-                print("Erro na conexão: ", e)
 
-        threading.Thread(target=run_ws, daemon=True).start()
-        print("Thread WebSocket inicializada em background")
+                last_ping = time.time()
+
+                while self.keep_running:
+                    try:
+                        msg = self.ws.recv()
+                        if msg:
+                            print(f'Mensagem recebida: {msg}')
+                    except websocket.WebSocketTimeoutException:
+                        pass
+                    except Exception as e:
+                        print("Erro no loop de conexão websocket", e)
+                        break
+
+                    if time.time() - last_ping > 30:
+                        try:
+                            self.ws.ping()
+                            last_ping = time.time()
+                        except Exception as e:
+                            print("Falha ao enviar ping: ", e)
+                            break
+
+                    time.sleep(0.2)
+            except Exception as e:
+                print("Erro ao conectar websocket", e)
+            finally:
+                if self.ws:
+                    self.ws.close()
+                    print("Conexão WebSocket encerrada.")
+
+        self.ws_thread = threading.Thread(target=run_ws, daemon=True)
+        self.ws_thread.start()
+        print("Thread WebSocket inicializada em background!")
+
+    def disconnect_user(self):
+        self.keep_running = False
+        print("WebSocket encerrado pelo cliente")

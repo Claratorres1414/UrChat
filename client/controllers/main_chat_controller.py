@@ -53,3 +53,4 @@ class MainChatController:
 
     def tp_home(self):
         self.main_window.mostrar_tela("home")
+        self.api_service.disconnect_user()
