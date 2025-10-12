@@ -1,9 +1,11 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget
 
+from client.controllers.conversation_chat_controller import ConversationChatController
 from client.controllers.home_controller import HomeController
 from client.controllers.login_controller import LoginController
 from client.controllers.main_chat_controller import MainChatController
+from client.views.conversation_chat_ui import ConversationChatUi
 from client.views.home_ui import HomeUi
 from client.views.login_ui import LoginUI
 from client.views.main_chat_ui import MainChatUI
@@ -38,6 +40,8 @@ class MainWindow(QMainWindow):
             "main_chat": self.stack.indexOf(self.main_chat_ui)
         }
 
+        self.chat_telas = {}
+
         self.home_controller = HomeController(self.home_ui, self)
         self.cadastro_controller = CadastroController(self.cadastro_ui, self, self.api_service)
         self.login_controller = LoginController(self.login_ui, self, self.api_service)
@@ -47,6 +51,21 @@ class MainWindow(QMainWindow):
 
     def mostrar_tela(self, name):
         self.stack.setCurrentIndex(self.telas[name])
+
+    def mostrar_chat(self, username):
+        from client.controllers.conversation_chat_controller import ConversationChatController
+        from client.views.conversation_chat_ui import ConversationChatUi
+
+        if username in self.chat_telas:
+            ui, _ = self.chat_telas[username]
+        else:
+            ui = ConversationChatUi()
+            controller = ConversationChatController(ui, self, self.api_service, username)
+            self.stack.addWidget(ui)
+            self.chat_telas[username] = (ui, controller)
+            self.telas[username] = self.stack.indexOf(ui)
+
+        self.stack.setCurrentIndex(self.telas[username])
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
