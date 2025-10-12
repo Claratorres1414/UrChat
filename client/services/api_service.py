@@ -63,7 +63,7 @@ class ApiService:
                         msg = self.ws.recv()
                         if msg:
                             print(f'Mensagem recebida: {msg}')
-                            self.handle_message(msg)
+                            self.on_message(msg)
                     except websocket.WebSocketTimeoutException:
                         pass
                     except Exception as e:
