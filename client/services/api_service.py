@@ -5,6 +5,15 @@ class ApiService:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip('/')
 
+    def list_contacts(self):
+        try:
+            response = requests.get(f'{self.base_url}/users/contacts')
+            response.raise_for_status()
+            return response.json()
+        except RequestException as e:
+            print("Erro na requisição list_contacts", e)
+            return []
+
     def register_user(self, username: str, password: str) -> dict:
         try:
             payload = {"username": username, "password": password}
