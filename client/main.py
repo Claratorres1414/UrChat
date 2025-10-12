@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
-        self.api_service = ApiService(base_url="http://127.0.0.1:8000")
+        self.api_service = ApiService(base_url="http://127.0.0.1:8000", base_ws_url="ws://127.0.0.1:8000/connect/ws?token=")
 
         self.home_ui = HomeUi()
         self.cadastro_ui = CadastroUi()
