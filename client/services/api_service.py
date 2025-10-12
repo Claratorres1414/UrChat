@@ -1,9 +1,12 @@
 import requests
 from requests.exceptions import RequestException
+import threading
+import websocket
 
 class ApiService:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, base_ws_url: str):
         self.base_url = base_url.rstrip('/')
+        self.base_ws_url = base_ws_url.rstrip('/')
 
     def list_contacts(self):
         try:
@@ -37,3 +40,17 @@ class ApiService:
                 return {"success": False, "detail": detail}
         except RequestException as e:
             return {"success": False, "detail": str(e)}
+
+    def connect_user(self, token: str):
+        ws_url = f"{self.base_ws_url}{token}"
+
+        def run_ws():
+            try:
+                ws = websocket.WebSocket()
+                ws.connect(ws_url)
+                print("Conexão WebSocket estabelecida com o servidor!")
+            except Exception as e:
+                print("Erro na conexão: ", e)
+
+        threading.Thread(target=run_ws, daemon=True).start()
+        print("Thread WebSocket inicializada em background")
