@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QMessageBox
+from requests import RequestException
 
 from client.services.api_service import ApiService
 
@@ -22,6 +23,12 @@ class LoginController:
 
         result = self.api_service.login_user(username, password)
         if result["success"]:
+            try:
+                self.api_service.connect_user(result["data"]["access_token"])
+            except RequestException as e:
+                QMessageBox.warning(self.ui, "Falha no servidor", f"Não foi possível conectar {username} ao servidor!")
+                print("Erro de conexão: ", e)
+                return
             QMessageBox.information(self.ui, "Sucesso", f"Bem vindo {username}!")
             self.ui.username_input.clear()
             self.ui.password_input.clear()
