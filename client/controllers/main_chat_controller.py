@@ -11,6 +11,8 @@ class MainChatController:
         self.main_window = main_window
         self.api_service = api_service
 
+        self.chat_windows = {}
+
         self.ui.sair_btn.clicked.connect(self.tp_home)
 
         self.load_contacts()
@@ -18,6 +20,8 @@ class MainChatController:
         self.timer = QTimer()
         self.timer.timeout.connect(self.load_contacts)
         self.timer.start(1000) #Se aumentar o fluxo de clientes, aumentar tempo
+
+        self.ui.contacts_list.itemDoubleClicked.connect(self.open_chat)
 
     def load_contacts(self):
         try:
@@ -41,6 +45,11 @@ class MainChatController:
 
         except RequestException as e:
             print(f"Erro ao carregar contatos: {e}")
+
+    def open_chat(self, item):
+        contact = item.text()
+        contact_username = contact.split(" ")[0].strip("()")  # separa só o nome antes do parêntese
+        self.main_window.mostrar_chat(contact_username)
 
     def tp_home(self):
         self.main_window.mostrar_tela("home")
