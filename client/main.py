@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.home_controller = HomeController(self.home_ui, self)
         self.cadastro_controller = CadastroController(self.cadastro_ui, self, self.api_service)
         self.login_controller = LoginController(self.login_ui, self, self.api_service)
-        self.main_chat_controller = MainChatController(self.main_chat_ui, self)
+        self.main_chat_controller = MainChatController(self.main_chat_ui, self, self.api_service)
 
         self.mostrar_tela("home")
 
