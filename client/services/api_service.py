@@ -11,6 +11,7 @@ class ApiService:
         self.ws = None
         self.ws_thread = None
         self.keep_running = False
+        self.on_message = None
 
     def list_contacts(self):
         try:
@@ -62,6 +63,7 @@ class ApiService:
                         msg = self.ws.recv()
                         if msg:
                             print(f'Mensagem recebida: {msg}')
+                            self.handle_message(msg)
                     except websocket.WebSocketTimeoutException:
                         pass
                     except Exception as e:
@@ -91,3 +93,10 @@ class ApiService:
     def disconnect_user(self):
         self.keep_running = False
         print("WebSocket encerrado pelo cliente")
+
+    def set_message_callback(self, callback):
+        self.on_message = callback
+
+    def handle_message(self, msg):
+        if self.on_message:
+            self.on_message(msg)
