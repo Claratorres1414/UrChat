@@ -8,6 +8,7 @@ class ApiService:
     def __init__(self, base_url: str, base_ws_url: str):
         self.base_url = base_url.rstrip('/')
         self.base_ws_url = base_ws_url.rstrip('/')
+        self.contacts_map = {}
         self.ws = None
         self.ws_thread = None
         self.keep_running = False
@@ -17,7 +18,9 @@ class ApiService:
         try:
             response = requests.get(f'{self.base_url}/users/contacts')
             response.raise_for_status()
-            return response.json()
+            contacts = response.json()
+            self.contacts_map = {c["id"]: c["username"] for c in contacts}
+            return contacts
         except RequestException as e:
             print("Erro na requisição list_contacts", e)
             return []
