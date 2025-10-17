@@ -1,3 +1,4 @@
+import json
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget
 
@@ -49,23 +50,50 @@ class MainWindow(QMainWindow):
 
         self.mostrar_tela("home")
 
+        self.api_service.set_message_callback(self.on_message_received)
+
     def mostrar_tela(self, name):
         self.stack.setCurrentIndex(self.telas[name])
 
-    def mostrar_chat(self, username):
+    def mostrar_chat(self, contact):
         from client.controllers.conversation_chat_controller import ConversationChatController
         from client.views.conversation_chat_ui import ConversationChatUi
 
-        if username in self.chat_telas:
-            ui, _ = self.chat_telas[username]
+        contact["username"] = contact["username"]
+        contact_id = contact["id"]
+
+        if contact_id in self.chat_telas:
+            ui, _ = self.chat_telas[contact_id]
         else:
             ui = ConversationChatUi()
-            controller = ConversationChatController(ui, self, self.api_service, username)
+            controller = ConversationChatController(ui, self, self.api_service, contact)
             self.stack.addWidget(ui)
-            self.chat_telas[username] = (ui, controller)
-            self.telas[username] = self.stack.indexOf(ui)
+            self.chat_telas[contact_id] = (ui, controller)
+            self.telas[contact_id] = self.stack.indexOf(ui)
 
-        self.stack.setCurrentIndex(self.telas[username])
+        self.stack.setCurrentIndex(self.telas[contact_id])
+
+    def on_message_received(self, msg):
+        try:
+            data = json.loads(msg) if isinstance(msg, str) else msg
+        except Exception as e:
+            print("Erro ao decodificar mensagem:", e)
+            return
+
+        msg_type = data.get("type")
+
+        if msg_type == "message":
+            sender_id = data.get("from")
+            content = data.get("msg")
+
+            print(f"Mensagem recebida de {sender_id}: {content}")
+
+            # Se o chat estiver aberto, repassa ao controlador certo
+            if sender_id in self.chat_telas:
+                _, controller = self.chat_telas[sender_id]
+                controller.add_message(data)
+            else:
+                print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
