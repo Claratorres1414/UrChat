@@ -1,3 +1,5 @@
+import json
+
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from client.services.api_service import ApiService
@@ -6,34 +8,44 @@ class ChatSignals(QObject):
     messageReceived = pyqtSignal(str)
 
 class ConversationChatController:
-    def __init__(self, ui, main_window, api_service: ApiService, contact_username: str):
+    def __init__(self, ui, main_window, api_service: ApiService, contact):
         self.ui = ui
         self.main_window = main_window
         self.api_service = api_service
-        self.contact_info = contact_username
+        self.contact = contact
 
-        self.ui.set_contact_name(contact_username)
+        self.messages = []
+
+        self.ui.set_contact_name(contact["username"])
 
         self.ui.send_button.clicked.connect(self.send_message)
         self.ui.voltar_btn.clicked.connect(self.tp_main_chat)
 
-        self.api_service.set_message_callback(self.on_message_received)
+    def add_message(self, msg):
+        self.messages.append(msg)
+        sender_id = msg.get("from")
+        sender = self.api_service.contacts_map.get(sender_id)
+        content = msg.get("msg")
+        self.ui.chat_display.append(f"{sender}: {content}")
 
     def send_message(self):
-        msg = self.ui.message_input.text().strip()
-        if not msg:
+        content = self.ui.message_input.text().strip()
+        if not content:
             return
-
-        self.ui.message_input.clear()
-
+        msg = {
+            "to": self.contact["id"],
+            "msg": content
+        }
         try:
             if self.api_service.ws:
-                self.api_service.ws.send(msg)
+                self.api_service.ws.send(json.dumps(msg))
+                self.add_message({
+                    "from_username": "Você",
+                    "msg": content
+                })
+                self.ui.message_input.clear()
         except Exception as e:
             print("Erro ao enviar mensagem: ", e)
-
-    def on_message_received(self, msg):
-        self.ui.chat_display.append(msg)
 
     def tp_main_chat(self):
         self.main_window.mostrar_tela("main_chat")
