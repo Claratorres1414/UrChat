@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QListWidgetItem
 from requests import RequestException
 
@@ -41,14 +41,16 @@ class MainChatController:
                     item_text = f"{contact["username"]} ({contact["status"]} - {contact["last_seen"]})"
 
                 item = QListWidgetItem(item_text)
+                item.setData(Qt.ItemDataRole.UserRole, contact)
                 self.ui.contacts_list.addItem(item)
 
         except RequestException as e:
             print(f"Erro ao carregar contatos: {e}")
 
     def open_chat(self, item):
-        contact = item.text()
-        contact_username = contact.split(" ")[0].strip("()")  # separa só o nome antes do parêntese
+        contact = item.data(Qt.ItemDataRole.UserRole)
+        contact_username = contact["username"]
+        print(f"Abrindo chat com {contact_username} | {contact["id"]}")
         self.main_window.mostrar_chat(contact_username)
 
     def tp_home(self):
