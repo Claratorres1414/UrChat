@@ -50,8 +50,8 @@ class MainChatController:
     def open_chat(self, item):
         contact = item.data(Qt.ItemDataRole.UserRole)
         contact_username = contact["username"]
+        self.main_window.mostrar_chat(contact)
         print(f"Abrindo chat com {contact_username} | {contact["id"]}")
-        self.main_window.mostrar_chat(contact_username)
 
     def tp_home(self):
         self.main_window.mostrar_tela("home")
