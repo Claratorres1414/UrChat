@@ -54,5 +54,6 @@ class MainChatController:
         print(f"Abrindo chat com {contact_username} | {contact["id"]}")
 
     def tp_home(self):
-        self.main_window.mostrar_tela("home")
         self.api_service.disconnect_user()
+        self.main_window.logout()
+        self.main_window.mostrar_tela("home")
