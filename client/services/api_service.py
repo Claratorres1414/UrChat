@@ -95,6 +95,11 @@ class ApiService:
 
     def disconnect_user(self):
         self.keep_running = False
+        if self.ws:
+            try:
+                self.ws.close()
+            except Exception:
+                pass
         print("WebSocket encerrado pelo cliente")
 
     def set_message_callback(self, callback):
