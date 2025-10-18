@@ -2,11 +2,9 @@ import json
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget
 
-from client.controllers.conversation_chat_controller import ConversationChatController
 from client.controllers.home_controller import HomeController
 from client.controllers.login_controller import LoginController
 from client.controllers.main_chat_controller import MainChatController
-from client.views.conversation_chat_ui import ConversationChatUi
 from client.views.home_ui import HomeUi
 from client.views.login_ui import LoginUI
 from client.views.main_chat_ui import MainChatUI
@@ -52,6 +50,8 @@ class MainWindow(QMainWindow):
 
         self.api_service.set_message_callback(self.on_message_received)
 
+        self.pending_messages_closed_chat = {}
+
     def mostrar_tela(self, name):
         self.stack.setCurrentIndex(self.telas[name])
 
@@ -59,7 +59,6 @@ class MainWindow(QMainWindow):
         from client.controllers.conversation_chat_controller import ConversationChatController
         from client.views.conversation_chat_ui import ConversationChatUi
 
-        contact["username"] = contact["username"]
         contact_id = contact["id"]
 
         if contact_id in self.chat_telas:
@@ -70,6 +69,14 @@ class MainWindow(QMainWindow):
             self.stack.addWidget(ui)
             self.chat_telas[contact_id] = (ui, controller)
             self.telas[contact_id] = self.stack.indexOf(ui)
+
+            if contact_id in self.pending_messages_closed_chat:
+                for message in self.pending_messages_closed_chat[contact_id]:
+                    try:
+                        controller.add_message(message)
+                    except:
+                        pass
+                self.pending_messages_closed_chat[contact_id].clear()
 
         self.stack.setCurrentIndex(self.telas[contact_id])
 
@@ -93,7 +100,13 @@ class MainWindow(QMainWindow):
                 _, controller = self.chat_telas[sender_id]
                 controller.add_message(data)
             else:
+                if sender_id not in self.pending_messages_closed_chat:
+                    self.pending_messages_closed_chat[sender_id] = []
+                self.pending_messages_closed_chat[sender_id].append(data)
                 print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
+
+    def logout(self):
+        self.chat_telas.clear()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
