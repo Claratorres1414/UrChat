@@ -98,6 +98,8 @@ class MainWindow(QMainWindow):
             # Se o chat estiver aberto, repassa ao controlador certo
             if sender_id in self.chat_telas:
                 _, controller = self.chat_telas[sender_id]
+                if sender_id == data.get("to"):
+                    return
                 controller.add_message(data)
             else:
                 if sender_id not in self.pending_messages_closed_chat:
