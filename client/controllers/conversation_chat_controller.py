@@ -24,8 +24,11 @@ class ConversationChatController:
     def add_message(self, msg):
         self.messages.append(msg)
         sender_id = msg.get("from")
-        sender = self.api_service.contacts_map.get(sender_id)
         content = msg.get("msg")
+        if sender_id == self.api_service.user_id:
+            self.ui.chat_display.append(f"Você: {content}")
+            return
+        sender = self.api_service.contacts_map.get(sender_id)
         self.ui.chat_display.append(f"{sender}: {content}")
 
     def send_message(self):
@@ -39,10 +42,6 @@ class ConversationChatController:
         try:
             if self.api_service.ws:
                 self.api_service.ws.send(json.dumps(msg))
-                self.add_message({
-                    "from_username": "Você",
-                    "msg": content
-                })
                 self.ui.message_input.clear()
         except Exception as e:
             print("Erro ao enviar mensagem: ", e)
