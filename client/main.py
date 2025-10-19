@@ -89,6 +89,19 @@ class MainWindow(QMainWindow):
 
         msg_type = data.get("type")
 
+        if msg_type == "pending_messages":
+            sender_id = data.get("from")
+            content = data.get("msg")
+            print(f"[Pendente] de {sender_id}: {content}")
+            if sender_id not in self.pending_messages_closed_chat:
+                self.pending_messages_closed_chat[sender_id] = []
+            self.pending_messages_closed_chat[sender_id].append(data)
+            print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
+
+        if msg_type == "unhandled_message":
+            _, controller = self.chat_telas[data.get("to")]
+            controller.add_message(data)
+
         if msg_type == "message":
             sender_id = data.get("from")
             to_id = data.get("to")
