@@ -13,6 +13,7 @@ class ApiService:
         self.ws_thread = None
         self.keep_running = False
         self.on_message = None
+        self.user_id = None
 
     def list_contacts(self):
         try:
@@ -42,6 +43,17 @@ class ApiService:
             payload = {"username": username, "password": password}
             response = requests.post(f"{self.base_url}/auth/login", json=payload)
             if response.status_code in (200, 201):
+                access_token = response.json()["access_token"]
+
+                headers = {
+                    "token": access_token
+                }
+
+                try:
+                    user = requests.get(f"{self.base_url}/users/currentUser", headers=headers)
+                    self.user_id = user.json()["id"]
+                except RequestException as e:
+                    return {"success": False, "detail": str(e)}
                 return {"success": True, "data": response.json()}
             else:
                 detail = response.json().get("detail", "Erro desconhecido")
