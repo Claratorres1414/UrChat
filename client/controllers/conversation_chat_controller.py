@@ -18,12 +18,12 @@ class ConversationChatController:
 
         self.ui.set_contact_name(contact["username"])
 
+        self.main_window.signals.message_received.connect(self.handle_message)
+
         self.ui.send_button.clicked.connect(self.send_message)
         self.ui.voltar_btn.clicked.connect(self.tp_main_chat)
 
-    def add_message(self, msg):
-        sender_id = msg.get("from")
-        content = msg.get("msg")
+    def add_message(self, sender_id, content):
 
         self.db.save_message(sender_id, self.api_service.user_id, content, delivered=1)
 
@@ -33,6 +33,24 @@ class ConversationChatController:
 
         sender = self.api_service.contacts_map.get(sender_id)
         self.ui.chat_display.append(f"{sender}: {content}")
+
+    def handle_message(self, data):
+        msg_type = data.get("type")
+
+        if msg_type not in ["message", "pending_messages", "unhandled_message"]:
+            return
+
+        sender_id = data.get("from")
+        receiver_id = data.get("to")
+        content = data.get("msg")
+
+        if sender_id != self.contact["id"] and receiver_id != self.contact["id"]:
+            return
+
+        self.db.save_message(sender_id, receiver_id, content, delivered=1)
+
+        sender_name = "Você" if sender_id == self.api_service.user_id else self.contact["username"]
+        self.ui.chat_display.append(f"{sender_name}: {content}")
 
     def send_message(self):
         content = self.ui.message_input.text().strip()
