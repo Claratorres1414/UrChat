@@ -16,7 +16,7 @@ class ChatDatabase:
                 sender_id INTEGER,
                 receiver_id INTEGER,
                 content TEXT,
-                delivered INTEGER DEFAULT 1
+                delivered INTEGER DEFAULT 0
             )
         """)
         self.conn.commit()
