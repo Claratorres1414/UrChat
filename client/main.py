@@ -71,14 +71,7 @@ class MainWindow(QMainWindow):
             self.stack.addWidget(ui)
             self.chat_telas[contact_id] = (ui, controller)
             self.telas[contact_id] = self.stack.indexOf(ui)
-
-            if contact_id in self.pending_messages_closed_chat:
-                for message in self.pending_messages_closed_chat[contact_id]:
-                    try:
-                        controller.add_message(message)
-                    except:
-                        pass
-                self.pending_messages_closed_chat[contact_id].clear()
+            controller.load_conversation_chat(contact_id)
 
         self.stack.setCurrentIndex(self.telas[contact_id])
 

@@ -21,12 +21,13 @@ class ChatDatabase:
         """)
         self.conn.commit()
 
-    def save_message(self, sender_id, receiver_id, content, delivered = 1):
+    def save_message(self, sender_id, receiver_id, content, delivered = 0):
         self.cursor.execute("""
             INSERT INTO messages (sender_id, receiver_id, content, delivered)
             VALUES (?, ?, ?, ?)
         """, (sender_id, receiver_id, content, delivered))
         self.conn.commit()
+        return self.cursor.lastrowid
 
     def get_conversation(self, user_a, user_b):
         self.cursor.execute("""
