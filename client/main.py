@@ -1,6 +1,6 @@
 import json
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 
 from client.controllers.home_controller import HomeController
 from client.controllers.login_controller import LoginController
@@ -11,6 +11,7 @@ from client.views.main_chat_ui import MainChatUI
 from views.cadastro_ui import CadastroUi
 from controllers.cadastro_controller import CadastroController
 from services.api_service import ApiService
+from services.chat_service import ChatSignals
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.stack)
 
         self.api_service = ApiService(base_url="http://127.0.0.1:8000", base_ws_url="ws://127.0.0.1:8000/connect/ws?token=")
+        self.signals = ChatSignals()
 
         self.home_ui = HomeUi()
         self.cadastro_ui = CadastroUi()
@@ -81,67 +83,16 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex(self.telas[contact_id])
 
     def on_message_received(self, msg):
-        try:
-            data = json.loads(msg) if isinstance(msg, str) else msg
-        except Exception as e:
-            print("Erro ao decodificar mensagem:", e)
+       try:
+           data = json.loads(msg) if isinstance(msg, str) else msg
+       except Exception as e:
+            print("Erro ao decodificar mensagem: ", e)
             return
 
-        msg_type = data.get("type")
-
-        if msg_type == "pending_messages":
-            sender_id = data.get("from")
-            content = data.get("msg")
-            print(f"[Pendente] de {sender_id}: {content}")
-            if sender_id not in self.pending_messages_closed_chat:
-                self.pending_messages_closed_chat[sender_id] = []
-            self.pending_messages_closed_chat[sender_id].append(data)
-            print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
-
-        if msg_type == "unhandled_message":
-            _, controller = self.chat_telas[data.get("to")]
-            controller.add_message(data)
-
-        if msg_type == "message":
-            sender_id = data.get("from")
-            to_id = data.get("to")
-            content = data.get("msg")
-
-            print(f"Mensagem recebida de {sender_id}: {content}")
-
-            if sender_id in self.chat_telas or to_id in self.chat_telas:
-                if sender_id == to_id:
-                    _, controller = self.chat_telas[to_id]
-                    controller.add_message(data)
-                    return
-                if sender_id == self.api_service.user_id and to_id in self.chat_telas:
-                    _, controller = self.chat_telas[to_id]
-                    controller.add_message(data)
-                elif sender_id != self.api_service.user_id and sender_id in self.chat_telas:
-                    _, controller = self.chat_telas[sender_id]
-                    controller.add_message(data)
-                else:
-                    if sender_id == self.api_service.user_id:
-                        if to_id not in self.pending_messages_closed_chat:
-                            self.pending_messages_closed_chat[to_id] = []
-                        self.pending_messages_closed_chat[to_id].append(data)
-                        print(f"Mensagem recebida de você, chat com {to_id} ainda não aberto.")
-                        return
-                    if sender_id not in self.pending_messages_closed_chat:
-                        self.pending_messages_closed_chat[sender_id] = []
-                    self.pending_messages_closed_chat[sender_id].append(data)
-                    print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
-            else:
-                if sender_id == self.api_service.user_id:
-                    if to_id not in self.pending_messages_closed_chat:
-                        self.pending_messages_closed_chat[to_id] = []
-                    self.pending_messages_closed_chat[to_id].append(data)
-                    print(f"Mensagem recebida de você, chat com {to_id} ainda não aberto.")
-                    return
-                if sender_id not in self.pending_messages_closed_chat:
-                    self.pending_messages_closed_chat[sender_id] = []
-                self.pending_messages_closed_chat[sender_id].append(data)
-                print(f"Mensagem recebida de {sender_id}, chat ainda não aberto.")
+       msg_type = data.get("type")
+       if msg_type in ["message", "pending_messages", "unhandled_message"]:
+            self.signals.message_received.emit(data)
+            return
 
     def logout(self):
         self.chat_telas.clear()
