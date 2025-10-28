@@ -15,6 +15,7 @@ class ConversationChatController:
         self.api_service = api_service
         self.contact = contact
         self.db = ChatDatabase(api_service.user_id)
+        self.contact_db = ChatDatabase(contact["id"])
 
         self.ui.set_contact_name(contact["username"])
 
@@ -37,6 +38,8 @@ class ConversationChatController:
             return
 
         msg_id = self.db.save_message(sender_id, receiver_id, content, delivered=0)
+        if sender_id != receiver_id:
+            msg_delivered = self.contact_db.save_message(sender_id, receiver_id, content, delivered=0)
 
         if receiver_id == self.api_service.user_id or self.contact["status"] == "online":
             self.db.mark_as_delivered(int(msg_id))
